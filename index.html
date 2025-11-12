@@ -455,11 +455,11 @@ document.getElementById("locBtn").addEventListener("click", ()=>{
 
 async function tryMergeExternal(){
   try{
-    const rj = await fetch("/data/ingredients.json", {cache:"no-store"});
+    const rj = await fetch("./data/ingredients.json", {cache:"no-store"});
     if(rj.ok){ const extra = await rj.json(); Object.assign(DATA, extra); }
   }catch{}
   try{
-    const rc = await fetch("/data/ingredients.csv", {cache:"no-store"});
+    const rc = await fetch("./data/ingredients.csv", {cache:"no-store"});
     if(!rc.ok) return;
     const text = await rc.text();
     const lines = text.split(/\\r?\\n/).filter(Boolean);
