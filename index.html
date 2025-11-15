@@ -632,37 +632,48 @@ document.getElementById("resetAll").addEventListener("click", ()=>{ rows=[]; ser
 servingsInput.addEventListener("input", render);
 buyToggle.addEventListener("change", render);
 
-document.getElementById("locBtn").addEventListener("click", ()=>{
-  if(!navigator.geolocation){ alert("Geolocation not supported on this device."); return; }
-  navigator.geolocation.getCurrentPosition(pos=>{
-    const {latitude:lat, longitude:lon}=pos.coords;
-    const REGION_FACTORS = [
-      {name:"Northeast", factor:1.06, box:[[-82,36],[-66,47]]},
-      {name:"Southeast", factor:0.96, box:[[-91,24],[-75,36]]},
-      {name:"Midwest",   factor:0.98, box:[[-104,36],[-82,49]]},
-      {name:"Southwest", factor:1.00, box:[[-115,25],[-95,37]]},
-      {name:"West",      factor:1.08, box:[[-125,32],[-114,49]]}
-    ];
-    const hit=REGION_FACTORS.find(r=>{
-      const [[minLon,minLat],[maxLon,maxLat]]=[r.box[0],r.box[1]];
-      return lon>=minLon && lon<=maxLon && lat>=minLat && lat<=maxLat;
-    });
-    if(hit){
-      REGION={name:hit.name, factor:hit.factor};
-      regionNote.textContent = `Using ${hit.name} regional average`;
-      regionBadge.style.display="inline-block";
-      regionBadge.textContent = "Regional";
-      priceNote.textContent = `Prices adjusted using ${hit.name} regional averages.`;
-    }else{
-      REGION={name:"National", factor:1.00};
-      regionNote.textContent = "Using national average";
-      regionBadge.style.display="none";
-      priceNote.textContent = "Prices use national grocery averages. Actual costs may vary by store and region.";
-    }
-    totalRow.classList.remove("flash"); void totalRow.offsetWidth; totalRow.classList.add("flash");
-    render();
-  }, ()=>{ regionNote.textContent = "Location permission declined"; }, {timeout:8000});
-});
+const locBtn = document.getElementById("locBtn");
+
+if (locBtn && navigator.geolocation) {
+  locBtn.addEventListener("click", () => {
+    navigator.geolocation.getCurrentPosition(pos => {
+      const { latitude: lat, longitude: lon } = pos.coords;
+
+      const REGION_FACTORS = [
+        { name: "Northeast", factor: 1.06, box: [[-82, 36], [-66, 47]] },
+        { name: "Southeast", factor: 0.96, box: [[-91, 24], [-75, 36]] },
+        { name: "Midwest",   factor: 0.98, box: [[-104, 36], [-82, 49]] },
+        { name: "Southwest", factor: 1.00, box: [[-115, 25], [-95, 37]] },
+        { name: "West",      factor: 1.08, box: [[-125, 32], [-114, 49]] }
+      ];
+
+      const hit = REGION_FACTORS.find(r => {
+        const [[minLon, minLat], [maxLon, maxLat]] = [r.box[0], r.box[1]];
+        return lon >= minLon && lon <= maxLon && lat >= minLat && lat <= maxLat;
+      });
+
+      if (hit) {
+        REGION = { name: hit.name, factor: hit.factor };
+        regionNote.textContent = `Using ${hit.name} regional average`;
+        regionBadge.style.display = "inline-block";
+        regionBadge.textContent = "Regional";
+        priceNote.textContent = `Prices adjusted using ${hit.name} regional averages.`;
+      } else {
+        REGION = { name: "National", factor: 1.00 };
+        regionNote.textContent = "Using national average";
+        regionBadge.style.display = "none";
+        priceNote.textContent = "Prices use national grocery averages. Actual costs may vary by store and region.`;
+      }
+
+      totalRow.classList.remove("flash");
+      void totalRow.offsetWidth;
+      totalRow.classList.add("flash");
+      render();
+    }, () => {
+      regionNote.textContent = "Location permission declined";
+    }, { timeout: 8000 });
+  });
+}
 
 async function tryMergeExternal(){
   try{
